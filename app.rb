@@ -1,30 +1,33 @@
-require 'nokogiri'
-require 'net/http'
 require_relative 'lib/converter'
 
-recognized_args = %w(-o)
+recognized_args = %w(-o -top-left -bottom-right -zoom)
 args = ARGV.map { |arg| arg.split("=") }.to_h.reject { |k, v| !recognized_args.include?(k) }
 
 output_file = args.has_key?("-o") ? args["-o"] : "./dist/map.jpg"
+zoom = args.has_key?("-zoom") ? args["-zoom"].to_i : 16
+raise "Zoom is out of valid range (max 21)" if zoom < 0 && zoom > 21
 
-key = "an7nvfzojv5wa96dsga5nk8w"
+top_left = args["-top-left"]
+bottom_right = args["-bottom-right"]
+
+raise 'No coord provided' if !top_left || !bottom_right
+
+top_left_lng, top_left_lat = top_left.split(',').map(&:to_f)
+bottom_right_lng, bottom_right_lat = bottom_right.split(',').map(&:to_f)
 
 # define name of folders for layers for better comprehension
 subfolders_layers = {
     "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD" => "ign_card",
-    "ELEVATION.SLOPES" => "elevation",
     "GEOGRAPHICALGRIDSYSTEMS.MAPS" => "ign_card_zoom"
 }
 
-layer = "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD"
+layer = "GEOGRAPHICALGRIDSYSTEMS.MAPS"
 
-# 
-tile_matrix = 16
-width_tile = 512
-height_tile = 512
+width_tile = 256
+height_tile = 256
 
-start_tile_row, start_tile_col = Converter.coord_to_tile(-1.1591903279164262, 45.08915008830281, tile_matrix)
-end_tile_row, end_tile_col = Converter.coord_to_tile(-1.1003434500368225, 45.02705215830905, tile_matrix)
+start_tile_row, start_tile_col = Converter.coord_to_tile(top_left_lng, top_left_lat, zoom)
+end_tile_row, end_tile_col = Converter.coord_to_tile(bottom_right_lng, bottom_right_lat, zoom)
 
 col_length = end_tile_col - start_tile_col
 row_length = end_tile_row - start_tile_row
@@ -36,7 +39,7 @@ full_height = col_length*height_tile
 # preparing folders
 subfolder_layer = subfolders_layers.has_key?(layer) ? subfolders_layers[layer] : layer
 tiles_folder = "dist/#{subfolder_layer}/tiles"
-scale_tiles_folder = "#{tiles_folder}/x#{tile_matrix}"
+scale_tiles_folder = "#{tiles_folder}/x#{zoom}"
 
 `mkdir -p dist/`
 `mkdir -p #{tiles_folder}`
@@ -45,9 +48,12 @@ scale_tiles_folder = "#{tiles_folder}/x#{tile_matrix}"
 # creating white canvas of size of future map
 `convert -size #{full_height}x#{full_width} canvas:white -colorspace sRGB -type truecolor --output #{output_file}`
 
+# Found when inspected element on ign geoportail
+key = "an7nvfzojv5wa96dsga5nk8w"
+
 row_length.times do |row_i|
     col_length.times do |col_i|
-        tile_params = "TileMatrix=#{tile_matrix}&TileCol=#{start_tile_col+col_i}&TileRow=#{start_tile_row+row_i}"
+        tile_params = "TileMatrix=#{zoom}&TileCol=#{start_tile_col+col_i}&TileRow=#{start_tile_row+row_i}"
         path = "#{scale_tiles_folder}/tile_#{start_tile_col+col_i}_#{start_tile_row+row_i}.jpg"
 
         unless File.exists?(path)
