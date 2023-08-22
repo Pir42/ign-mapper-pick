@@ -45,12 +45,12 @@ scale_tiles_folder = "#{tiles_folder}/x#{zoom}"
 `mkdir -p #{tiles_folder}`
 `mkdir -p #{scale_tiles_folder}`
 
-# creating white canvas of size of future map
-`convert -size #{full_height}x#{full_width} canvas:white -colorspace sRGB -type truecolor --output #{output_file}`
-
 # Found when inspected element on ign geoportail
 key = "an7nvfzojv5wa96dsga5nk8w"
 
+tiles_path_ordered = []
+
+start_exec = Time.now
 row_length.times do |row_i|
     col_length.times do |col_i|
         tile_params = "TileMatrix=#{zoom}&TileCol=#{start_tile_col+col_i}&TileRow=#{start_tile_row+row_i}"
@@ -61,6 +61,11 @@ row_length.times do |row_i|
             `#{req}`
         end
 
-        `magick composite -geometry +#{height_tile*col_i}+#{width_tile*row_i} #{path} #{output_file} --output #{output_file}`
+        tiles_path_ordered.push("#{scale_tiles_folder}/tile_#{start_tile_col+col_i}_#{start_tile_row+row_i}.jpg")
     end
 end
+
+# Montage
+`magick montage #{tiles_path_ordered.join(" ")} -geometry 256x256 -tile #{col_length}x#{row_length} #{output_file} --output #{output_file}`
+
+p "Exec time : " + ((Time.now - start_exec) * 1000).to_s + "ms"
