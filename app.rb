@@ -20,8 +20,8 @@ layer = "GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN-EXPRESS.STANDARD"
 
 # 
 tile_matrix = 16
-width_tile = 256
-height_tile = 256
+width_tile = 512
+height_tile = 512
 
 start_tile_row, start_tile_col = Converter.coord_to_tile(-1.1591903279164262, 45.08915008830281, tile_matrix)
 end_tile_row, end_tile_col = Converter.coord_to_tile(-1.1003434500368225, 45.02705215830905, tile_matrix)
