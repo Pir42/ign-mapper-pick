@@ -1,6 +1,5 @@
-require_relative 'lib/converter'
-require_relative 'lib/filehelper'
 require_relative 'lib/tilezone'
+require 'net/http'
 
 # ARGS
 recognized_args = %w(-o -top-left -bottom-right -level)
@@ -19,7 +18,7 @@ top_left_lng, top_left_lat = top_left.split(',').map(&:to_f)
 bottom_right_lng, bottom_right_lat = bottom_right.split(',').map(&:to_f)
 
 # SETUP
-layer = "GEOGRAPHICALGRIDSYSTEMS.MAPS"
+layer = "ign_card_zoom"
 
 zone = TileZone.new(
     Tile.new(top_left_lng, top_left_lat, level),
@@ -29,22 +28,12 @@ zone = TileZone.new(
 # preparing folders
 file_helper = FileHelper.new(layer, level)
 
-# Found when inspected element on ign geoportail
-key = "an7nvfzojv5wa96dsga5nk8w"
-
 tiles_path_ordered = []
 
 start_exec = Time.now
-zone.each do |row_i, col_i|
-    tile_params = "TileMatrix=#{level}&TileCol=#{col_i}&TileRow=#{row_i}"
-    path = "#{file_helper.tiles_path}/tile_#{col_i}_#{row_i}.jpg"
-
-    unless File.exists?(path)
-        req = "wget -O #{path} --header='Host: wxs.ign.fr' --user-agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:88.0) Gecko/20100101 Firefox/88.0' 'https://wxs.ign.fr/#{key}/geoportail/wmts?layer=#{layer}&style=normal&tilematrixset=PM&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&#{tile_params}'"
-        `#{req}`
-    end
-
-    tiles_path_ordered.push("#{file_helper.tiles_path}/tile_#{col_i}_#{row_i}.jpg")
+zone.download(file_helper) do |path, count, progress|
+    print "Downloading tiles : #{progress}% (#{count.to_i}/#{zone.size}) #{count != zone.size ? "\r" : "\n"}"
+    tiles_path_ordered.push(path)
 end
 
 # Montage
