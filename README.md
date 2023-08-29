@@ -8,6 +8,8 @@ You will need [ImageMagick](https://imagemagick.org/script/download.php), [PROJ]
 
 ## Usage
 
+### Console
+
 ```bash
 ruby app.rb -top-left=2.2055824806882596,48.87745817562872 -bottom-right=2.2159992666936335,48.86847726150275 -zoom=18 -o=./
 ```
@@ -19,6 +21,29 @@ Arguments :
 - bottom-right : lng and lat for the bottom right point of the zone you want to capture
 
 *The top and bottom point will represent the rectangle zone captured*
+
+### Library
+
+```ruby
+# Create a map
+map = Map.new(
+    layer, # ign_card and ign_card_zoom available for now
+    level, # between 1 and 21
+    [top_left_lng, top_left_lat],
+    [bottom_right_lng, bottom_right_lat]
+)
+
+# Download tiles of a map
+map.download_tiles do |path, count, progress|
+    # path is the path of the tile file
+    # count is index of tile
+    # progress is between 0 and 100
+end
+
+# Assemble the tiles with
+map.assemble(output_file)
+
+```
 
 ## Good to know
 

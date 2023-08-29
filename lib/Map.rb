@@ -1,9 +1,9 @@
 require_relative 'tile'
-require_relative 'IGNServices'
+require_relative 'services/ign'
 
 class Map
     attr_accessor :layer, :level, :top_left_tile, :bottom_right_tile
-    include IGNServices
+    include Services::IGN
 
     #
     # @param layer [String]
