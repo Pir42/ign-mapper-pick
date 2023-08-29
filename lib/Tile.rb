@@ -4,6 +4,11 @@ require_relative 'FileHelper'
 class Tile
     attr_accessor :width, :height, :col, :row, :lng, :lat, :level
 
+    #
+    # @param lng [Float]
+    # @param lat [Float]
+    # @param level [Integer] between 1 and 21
+    #
     def initialize(lng, lat, level)
         @lng = lng
         @lat = lat

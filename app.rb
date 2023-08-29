@@ -1,4 +1,4 @@
-require_relative 'lib/tilezone'
+require_relative 'lib/map'
 require 'net/http'
 
 # ARGS
@@ -20,23 +20,23 @@ bottom_right_lng, bottom_right_lat = bottom_right.split(',').map(&:to_f)
 # SETUP
 layer = "ign_card_zoom"
 
-zone = TileZone.new(
-    Tile.new(top_left_lng, top_left_lat, level),
-    Tile.new(bottom_right_lng, bottom_right_lat, level)
+map = Map.new(
+    layer,
+    level,
+    [top_left_lng, top_left_lat],
+    [bottom_right_lng, bottom_right_lat]
 )
 
 # preparing folders
-file_helper = FileHelper.new(layer, level)
-
 tiles_path_ordered = []
 
 start_exec = Time.now
-zone.download(file_helper) do |path, count, progress|
-    print "Downloading tiles : #{progress}% (#{count.to_i}/#{zone.size}) #{count != zone.size ? "\r" : "\n"}"
+map.download_tiles do |path, count, progress|
+    print "Downloading tiles : #{progress}% (#{count.to_i}/#{map.size}) #{count != map.size ? "\r" : "\n"}"
     tiles_path_ordered.push(path)
 end
 
 # Montage
-`magick montage #{tiles_path_ordered.join(" ")} -geometry 256x256 -tile #{zone.width}x#{zone.height} #{output_file} --output #{output_file}`
+`magick montage #{tiles_path_ordered.join(" ")} -geometry 256x256 -tile #{map.width}x#{map.height} #{output_file} --output #{output_file}`
 
 p "Exec time : " + ((Time.now - start_exec) * 1000).to_s + "ms"
