@@ -60,7 +60,7 @@ class Map
         count = 0.0
         each do |row_i, col_i|
             path = tile_path_file(row_i, col_i)
-            request_tile(row_i, col_i, @level, technical_layer_name, path) unless File.exists?(path)
+            download_tile(row_i, col_i, @level, technical_layer_name, path) unless File.exists?(path)
             count += 1.0
             yield(path, count, '%.2f' % (count.to_f/size.to_f*100))
         end
