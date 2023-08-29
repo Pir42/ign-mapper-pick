@@ -1,5 +1,4 @@
 require_relative 'Converter'
-require_relative 'FileHelper'
 
 class Tile
     attr_accessor :width, :height, :col, :row, :lng, :lat, :level

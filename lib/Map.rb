@@ -66,6 +66,21 @@ class Map
         end
     end
 
+    #
+    # @return paths [Array<String>]
+    #
+    def ordered_tiles_paths
+        paths = []
+        each do |row_i, col_i|
+            paths.push(tile_path_file(row_i, col_i))
+        end
+        paths
+    end
+
+    def assemble(output_file)
+        `magick montage #{ordered_tiles_paths.join(" ")} -geometry 256x256 -tile #{height}x#{width} #{output_file}`
+    end
+
     WORKING_DIR="dist"
 
     LAYERS=%w(ign_card ign_card_zoom)

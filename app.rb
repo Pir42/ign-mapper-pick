@@ -28,15 +28,12 @@ map = Map.new(
 )
 
 # preparing folders
-tiles_path_ordered = []
-
 start_exec = Time.now
 map.download_tiles do |path, count, progress|
     print "Downloading tiles : #{progress}% (#{count.to_i}/#{map.size}) #{count != map.size ? "\r" : "\n"}"
-    tiles_path_ordered.push(path)
 end
 
 # Montage
-`magick montage #{tiles_path_ordered.join(" ")} -geometry 256x256 -tile #{map.width}x#{map.height} #{output_file} --output #{output_file}`
+map.assemble(output_file)
 
 p "Exec time : " + ((Time.now - start_exec) * 1000).to_s + "ms"
